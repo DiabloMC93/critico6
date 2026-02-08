@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Cuidados Críticos y Ventilación</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c0a09;
+            color: #f5f5f4;
+        }
+
+        .glass-card {
+            background: rgba(28, 25, 23, 0.8);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .option-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(41, 37, 36, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: rgba(68, 64, 60, 0.8);
+            border-color: rgba(168, 85, 247, 0.4);
+        }
+
+        .correct {
+            background-color: #064e3b !important;
+            border-color: #10b981 !important;
+            color: #d1fae5 !important;
+        }
+
+        .incorrect {
+            background-color: #450a0a !important;
+            border-color: #ef4444 !important;
+            color: #fee2e2 !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div id="app" class="w-full max-w-3xl">
+        <div id="quiz-screen">
+            <div class="mb-8">
+                <div class="flex justify-between items-end mb-4 px-1">
+                    <div>
+                        <h1 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1">Cuidados Críticos y Especializados</h1>
+                        <span id="question-index" class="text-2xl font-bold text-white">Pregunta 1 de 40</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <!-- Contadores Actualizados -->
+                        <div class="bg-stone-900 px-3 py-1 rounded-lg border border-stone-800 text-center">
+                            <span class="text-[10px] text-stone-500 font-bold uppercase block text-green-500">Bien</span>
+                            <span id="score-correct" class="text-green-400 font-bold text-xl">0</span>
+                        </div>
+                        <div class="bg-stone-900 px-3 py-1 rounded-lg border border-stone-800 text-center">
+                            <span class="text-[10px] text-stone-500 font-bold uppercase block text-red-500">Mal</span>
+                            <span id="score-incorrect" class="text-red-400 font-bold text-xl">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full bg-stone-900 h-2 rounded-full overflow-hidden">
+                    <div id="progress-fill" class="h-full bg-gradient-to-r from-blue-500 to-indigo-600 w-0 transition-all duration-500"></div>
+                </div>
+            </div>
+
+            <div class="glass-card p-8 md:p-10 rounded-3xl mb-6 shadow-2xl">
+                <h2 id="question-text" class="text-xl md:text-2xl font-semibold mb-8 text-stone-100 leading-tight"></h2>
+                <div id="options-container" class="grid gap-3"></div>
+            </div>
+            
+            <div class="flex justify-center">
+                <button id="next-btn" onclick="quiz.next()" class="hidden bg-white text-black px-12 py-4 rounded-2xl font-bold hover:bg-stone-200 transition-all shadow-xl active:scale-95">
+                    Siguiente Pregunta
+                </button>
+            </div>
+        </div>
+
+        <div id="result-screen" class="hidden glass-card p-12 rounded-[2.5rem] text-center">
+            <h2 class="text-3xl font-bold mb-4">Evaluación Finalizada</h2>
+            <div class="flex justify-center gap-8 mb-8">
+                <div>
+                    <p class="text-stone-500 text-sm mb-1 uppercase">Aciertos</p>
+                    <p id="final-correct" class="text-5xl font-bold text-green-400">0</p>
+                </div>
+                <div>
+                    <p class="text-stone-500 text-sm mb-1 uppercase">Errores</p>
+                    <p id="final-incorrect" class="text-5xl font-bold text-red-400">0</p>
+                </div>
+            </div>
+            <button onclick="location.reload()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-5 rounded-2xl font-bold text-lg">
+                Reiniciar Test Completo
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            { q: "1. ¿Cómo se comprueba que el guedel tiene el tamaño adecuado?", a: ["Desde la parte sup de la oreja hasta la comisura labial", "Distancia entre la comisura bucal y el ángulo de la mandíbula", "En emergencias no hay que tenerlo en cuenta", "Siempre el de color naranja"], c: 1 },
+            { q: "2. Gasometría venosa: pO2 40, pCO2 30, pH 7.22, HCO3 22. Se puede afirmar:", a: ["Insuf. respiratoria, hipocapnia, acidosis metabólica", "Hipercapnia, acidosis respiratoria", "Acidosis metabólica", "Insuf. respiratoria, hipercapnia, acidosis metabólica"], c: 0 },
+            { q: "3. La ingestión de bicarbonato para facilitar la digestión puede provocar una:", a: ["Acidosis respiratoria", "Acidosis metabólica", "Alcalosis respiratoria", "Alcalosis metabólica"], c: 3 },
+            { q: "4. Paciente post-op (64kg) en VM (FR 12, FiO2 45%, PEEP 8). Gases: PaO2 56, PaCO2 40, pH 7.32. ¿Cambio?", a: ["Aumentar la FR y la FiO2", "Aumentar la FR, FiO2 y volumen tidal", "Aumentar el volumen tidal y la FiO2", "Disminuir PEEP y aumentar volumen y FiO2"], c: 2 },
+            { q: "5. Posición para realizar la toracocentesis:", a: ["Decúbito prono", "Decúbito supino", "Sentado", "Decúbito supino o sentado"], c: 2 },
+            { q: "6. ¿Cuál NO es una complicación de la ventilación mecánica no invasiva (VMNI)?", a: ["Escaras faciales", "Mejora de la hipoxemia", "Aumento del trabajo por fugas", "Intolerancia mantenida"], c: 1 },
+            { q: "7. Si un paciente posee una coagulopatía, ¿qué acceso central es de primera elección?", a: ["Antecubital", "Yugular externa", "Femoral", "Todas son correctas"], c: 0 },
+            { q: "8. Sobre la presión intraabdominal (PIA), señale la INCORRECTA:", a: ["El valor normal es de 0 mmHg", "En obesidad mórbida un valor de 10 mmHg sería patológico", "En embarazada 12 mmHg sería patológico", "Todas son correctas"], c: 2 },
+            { q: "9. Tras drenaje torácico, suena alarma de bajo volumen, hay aumento de burbujeo en cámara de sello de agua y Vt de 200cc. ¿Problema?", a: ["Obstrucción del tubo endotraqueal", "Fístula broncopleural", "Asincronía con el respirador", "Todas son correctas"], c: 1 },
+            { q: "10. ¿Qué hallazgo acarrearía más problemas para la extubación?", a: ["FiO2 al 40%", "PEEP 5", "PVC 8", "Volumen minuto de 8 l/min"], c: 0 },
+            { q: "11. Cuidados posteriores a una punción lumbar:", a: ["Cefaleas, reposo absoluto 12h, decúbito prono 2h", "Cefaleas, reposo absoluto 6h, relativo 24h, decúbito prono 2h, 1.5-2 l de líquidos", "Cefaleas, reposo absoluto 6h, relativo 12h", "Cefaleas, reposo absoluto 6h, relativo 24h, decúbito prono 6h"], c: 1 },
+            { q: "13. Indicaciones para pericardiocentesis:", a: ["Prevenir hemorragia", "Disminuir la frecuencia cardiaca", "Taponamiento cardiaco, mejorar volumen minuto y tratar derrame", "Disminuir hemorragia"], c: 2 },
+            { q: "14. Paciente con pH 7.21, CO2 50 y HCO3 24. Valoración:", a: ["Acidosis respiratoria aguda", "Acidosis resp. compensatoria", "Alcalosis metabólica compensatoria", "Ninguna es correcta"], c: 0 },
+            { q: "15. ¿Cuál es el objetivo de la cardioversión?", a: ["Revertir la función cardiaca", "Cardiovertir el ritmo a sinusal", "Mantener la frecuencia cardiaca", "Usarlo cuando no tenga pulso"], c: 1 },
+            { q: "16. ¿Qué es la PEEP?", a: ["Presión positiva al final de la espiración", "Presión negativa al final de la espiración", "Presión positiva al principio de la espiración", "Presión positiva al final de la inspiración"], c: 0 },
+            { q: "17. Mecanismos para compensar una alcalosis respiratoria:", a: ["Hiperventilación pulmonar", "Hipoventilación pulmonar", "Incremento de reabsorción de bicarbonato", "Disminución de reabsorción de bicarbonato y excreción de H+"], c: 3 },
+            { q: "18. ¿Cuál es la variable independiente en los respiradores volumétricos?", a: ["La presión", "El pulmón", "Tanto la presión como el pulmón", "La PEEP"], c: 0 },
+            { q: "19. Sobre complicaciones de intubación endotraqueal:", a: ["Infección nosocomial es la más frecuente a corto plazo", "Autoextubación o lesión por presión del neumotapón", "Estenosis traqueal por intubaciones repetidas", "Todas son correctas"], c: 3 },
+            { q: "20. ¿Qué vaso toma un acceso venoso central al entrar en el corazón?", a: ["Vena cava", "Vena pulmonar", "Arteria pulmonar", "Arteria cava"], c: 0 },
+            { q: "21. Gasometría: pH 7.49, pCO2 29, HCO3 24, BE +2. Causa probable:", a: ["Neumonía", "Crisis de ansiedad", "Convulsión tónico-clónica", "Vómitos profundos"], c: 1 },
+            { q: "22. ¿Dónde se fija el catéter epidural?", a: ["A la espalda, filtro accesible sobre la clavícula", "A la espalda, filtro sobre la almohada", "A la espalda, filtro sobre el muslo", "A la espalda, filtro sobre el colchón"], c: 0 },
+            { q: "23. ¿Cuándo usamos un marcapasos?", a: ["Con cualquier arritmia", "Cuando el paciente está hemodinámicamente inestable", "Cuando está estable", "Para moverse"], c: 1 },
+            { q: "24. Gasometría: pH 7.32, pCO2 78, HCO3 36, BE -2. Patología probable:", a: ["EPOC con infección aguda", "Crisis de ansiedad", "Tratamiento con furosemida", "Cetoacidosis diabética"], c: 0 },
+            { q: "25. ¿A qué se refiere 'proporción de mezcla de O2 y aire comprimido'?", a: ["Flujo inspiratorio", "PEEP", "FiO2", "Volumen minuto"], c: 2 },
+            { q: "26. En VM controlada por volumen, ¿qué parámetros influyen en la ventilación?", a: ["Trigger", "PEEP", "Relación I:E", "Todas influyen"], c: 3 },
+            { q: "27. Sobre traqueostomía percutánea, señale la INCORRECTA:", a: ["Método definitivo de aislamiento de vía aérea", "Incisión en 3-4 espacio cartilaginoso traqueal superior", "Solo se puede realizar en quirófano", "Indicada en intubación dificultosa"], c: 2 },
+            { q: "28. Cuidados de enfermería en accesos arteriales:", a: ["Administrar suero heparinizado continuo", "Vigilar temperatura de los dedos", "Extracción de gasometrías", "Todas son correctas"], c: 3 },
+            { q: "29. Complicaciones del balón de contrapulsación aortica (BCIA):", a: ["Trombocitopenia", "Alteración en circulación del brazo izquierdo", "Insuficiencia prerrenal", "Todas son correctas"], c: 3 },
+            { q: "30. Sobre la ventilación mecánica:", a: ["Es preferentemente terapéutico", "La distensibilidad pediátrica (ml/cmH2O/kg) es similar al adulto", "El parámetro más relacionado con barotrauma es la PEEP", "Aumenta el retorno venoso"], c: 1 },
+            { q: "31. Indicadores de la contrapulsación aortica:", a: ["Shock cardiogénico", "Shock séptico", "Defectos mecánicos reversibles", "Shock cardiogénico e infarto con defectos mecánicos"], c: 3 },
+            { q: "32. Paciente intubado: pH 7.38, PCO2 41, HCO3 24, PO2 52. VM: FR 14, FiO2 100%, PEEP 5. ¿Cambio?", a: ["Aumentar PEEP a 10 cm H2O", "Aumentar alarma de presión máxima", "Aumentar FR a 18", "Aumentar Vt a 500 ml"], c: 0 },
+            { q: "33. ¿Por qué el paciente debe orinar antes de una paracentesis?", a: ["Evitar infección", "Evitar micción durante prueba", "Evitar pinchazo en vejiga", "No hace falta"], c: 2 },
+            { q: "34. ¿Cuál NO es una indicación de cardioversión?", a: ["Taquicardia supraventricular", "TV con pulso", "Fibrilación Ventricular (FV)", "Flutter auricular"], c: 2 },
+            { q: "35. Deporte o ejercicio violento puede provocar:", a: ["Acidosis respiratoria", "Acidosis metabólica", "Alcalosis respiratoria", "Alcalosis metabólica"], c: 1 },
+            { q: "36. En alta montaña, la falta de oxígeno provoca hiperventilación que deriva en:", a: ["Acidosis respiratoria", "Acidosis metabólica", "Alcalosis respiratoria", "Alcalosis metabólica"], c: 2 },
+            { q: "37. Complicaciones frecuentes durante la aspiración por tubo endotraqueal:", a: ["Hipoxia y broncoespasmo", "Edema de glotis e infección", "Hipoxia, broncoespasmo e infección nosocomial", "Hemorragia e hipoxia"], c: 2 },
+            { q: "38. ¿En qué ritmo está indicada la cardioversión?", a: ["TVSP (TV sin pulso)", "Perforación arterial", "Fibrilación Auricular (FA)", "Asistolia"], c: 2 },
+            { q: "39. ¿Qué es la paracentesis?", a: ["Extracción pleural", "Extracción de líquido del espacio abdominal", "Extracción de LCR", "Administración epidural"], c: 1 },
+            { q: "40. Objetivo del marcapasos temporal:", a: ["Evitar taquiarritmias", "Mantener saturación", "Mantener frecuencia cardiaca hasta que pase la arritmia crítica", "Ninguna es correcta"], c: 2 }
+        ];
+
+        class Quiz {
+            constructor() {
+                this.idx = 0;
+                this.correct = 0;
+                this.incorrect = 0;
+                this.answered = false;
+            }
+
+            render() {
+                this.answered = false;
+                const q = questions[this.idx];
+                document.getElementById('question-index').innerText = `Pregunta ${this.idx + 1} de ${questions.length}`;
+                document.getElementById('question-text').innerText = q.q;
+                document.getElementById('next-btn').classList.add('hidden');
+                document.getElementById('progress-fill').style.width = `${((this.idx + 1) / questions.length) * 100}%`;
+                
+                const container = document.getElementById('options-container');
+                container.innerHTML = '';
+                q.a.forEach((opt, i) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn w-full text-left p-4 md:p-5 rounded-2xl font-medium text-stone-300';
+                    btn.innerText = opt;
+                    btn.onclick = () => this.check(i, btn);
+                    container.appendChild(btn);
+                });
+            }
+
+            updateScores() {
+                document.getElementById('score-correct').innerText = this.correct;
+                document.getElementById('score-incorrect').innerText = this.incorrect;
+            }
+
+            check(i, btn) {
+                if (this.answered) return;
+                this.answered = true;
+                const correctIdx = questions[this.idx].c;
+                const btns = document.querySelectorAll('.option-btn');
+                
+                if (i === correctIdx) {
+                    this.correct++;
+                    btn.classList.add('correct');
+                } else {
+                    this.incorrect++;
+                    btn.classList.add('incorrect');
+                    btns[correctIdx].classList.add('correct');
+                }
+                
+                this.updateScores();
+                btns.forEach(b => b.disabled = true);
+                document.getElementById('next-btn').classList.remove('hidden');
+            }
+
+            next() {
+                this.idx++;
+                if (this.idx < questions.length) this.render();
+                else this.finish();
+            }
+
+            finish() {
+                document.getElementById('quiz-screen').classList.add('hidden');
+                document.getElementById('result-screen').classList.remove('hidden');
+                document.getElementById('final-correct').innerText = this.correct;
+                document.getElementById('final-incorrect').innerText = this.incorrect;
+            }
+        }
+
+        const quiz = new Quiz();
+        window.onload = () => quiz.render();
+    </script>
+</body>
+</html>
